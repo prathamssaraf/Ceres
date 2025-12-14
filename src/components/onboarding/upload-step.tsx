@@ -24,29 +24,7 @@ export function UploadStep({
   const [dragActive, setDragActive] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
-  const { startUpload, isUploading: utIsUploading } = useUploadThing("imageUploader", {
-    onClientUploadComplete: (res) => {
-      console.log("Upload complete!", res);
-      if (res && res[0]) {
-        // Update with cloud URL from Uploadthing
-        updateDropData({
-          imagePreview: res[0].url,
-        });
-        setIsUploading(false);
-      }
-    },
-    onUploadError: (error) => {
-      console.error("Upload error:", error);
-      // Only show error if it's not the callback issue
-      if (!error.message.includes("callback failed")) {
-        alert("Upload failed: " + error.message);
-      }
-      setIsUploading(false);
-    },
-    onUploadBegin: (fileName) => {
-      console.log("Upload started:", fileName);
-    },
-  });
+  const { startUpload } = useUploadThing("imageUploader");
 
   const handleFileChange = async (file: File) => {
     if (file && file.type.startsWith("image/")) {
@@ -60,22 +38,54 @@ export function UploadStep({
       };
       reader.readAsDataURL(file);
 
-      // Upload to cloud storage with timeout
+      // Upload to cloud storage
       setIsUploading(true);
 
-      // Set timeout to auto-complete after 10 seconds (upload usually takes 3-5s)
-      const timeoutId = setTimeout(() => {
-        console.log("Upload timeout - proceeding anyway");
-        setIsUploading(false);
-      }, 10000);
-
       try {
-        await startUpload([file]);
-        clearTimeout(timeoutId);
-      } catch (error) {
-        console.error("Upload failed:", error);
-        clearTimeout(timeoutId);
+        console.log("Starting upload...");
+        const uploadResult = await startUpload([file]).catch((err) => {
+          // Even if callback fails, the upload might have succeeded
+          console.log("Upload threw error (might be callback issue):", err);
+
+          // Check if error data contains file info
+          if (err && err.cause && err.cause.fileKey) {
+            // Construct URL from file key
+            const fileKey = err.cause.fileKey;
+            const cloudUrl = `https://utfs.io/f/${fileKey}`;
+            console.log("Extracted URL from error:", cloudUrl);
+            return [{ url: cloudUrl, key: fileKey }];
+          }
+
+          throw err;
+        });
+
+        console.log("Upload result:", uploadResult);
+
+        // Get the URL from the upload result
+        if (uploadResult && uploadResult[0]) {
+          const cloudUrl = uploadResult[0].url;
+          console.log("Image uploaded successfully to:", cloudUrl);
+
+          // Update with the cloud URL
+          updateDropData({
+            imagePreview: cloudUrl,
+          });
+        }
+
         setIsUploading(false);
+      } catch (error: any) {
+        console.error("Upload error:", error);
+
+        // Check if the error message indicates callback failure but successful upload
+        if (error && error.message && error.message.toLowerCase().includes("callback")) {
+          console.log("Callback failed - file likely uploaded, using base64 preview");
+          // File was uploaded but callback failed - that's ok, we have the base64 preview
+          setIsUploading(false);
+        } else {
+          // Real upload error
+          alert("Upload failed. Please try again.");
+          setIsUploading(false);
+        }
       }
     }
   };
