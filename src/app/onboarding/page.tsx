@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 import { UploadStep } from "@/components/onboarding/upload-step";
 import { DescribeStep } from "@/components/onboarding/describe-step";
 import { VibeStep } from "@/components/onboarding/vibe-step";
 import { PreviewStep } from "@/components/onboarding/preview-step";
+import { Command } from "lucide-react";
 
 export type DropData = {
   imageFile: File | null;
@@ -55,6 +57,23 @@ export default function OnboardingPage() {
     setDropData((prev) => ({ ...prev, ...data }));
   };
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Escape to go back
+      if (e.key === "Escape" && currentStep > 0) {
+        handleBack();
+      }
+      // Don't interfere with typing in inputs
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [currentStep]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 flex items-center justify-center p-4">
       <div className="w-full max-w-3xl">
@@ -97,9 +116,17 @@ export default function OnboardingPage() {
           />
         </div>
 
-        {/* Step Indicator */}
-        <div className="mt-4 text-center text-neutral-500 text-sm">
-          Step {currentStep + 1} of {steps.length}
+        {/* Step Indicator & Keyboard Shortcuts */}
+        <div className="mt-4 flex items-center justify-between text-neutral-500 text-sm">
+          <div className="text-center flex-1">
+            Step {currentStep + 1} of {steps.length}
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="border-neutral-700 text-neutral-500 text-xs">
+              <Command className="h-3 w-3 mr-1" />
+              ESC to go back
+            </Badge>
+          </div>
         </div>
       </div>
     </div>

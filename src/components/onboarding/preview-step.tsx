@@ -4,8 +4,19 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Check, Loader2, Sparkles } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { ArrowLeft, Check, Loader2, Sparkles, AlertCircle } from "lucide-react";
 import { DropData } from "@/app/onboarding/page";
+import { useToast } from "@/components/ui/toast";
 
 type PreviewStepProps = {
   dropData: DropData;
@@ -19,26 +30,44 @@ type PreviewStepProps = {
 export function PreviewStep({ dropData, onBack }: PreviewStepProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const { showToast, ToastContainer } = useToast();
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    setError(null);
 
-    // TODO: Connect to Member B's API to:
-    // 1. Upload image to storage
-    // 2. Create drop in database
-    // 3. Call Member A's AI service to generate UI config
-    // 4. Create Flowglad product
+    try {
+      // TODO: Connect to Member B's API to:
+      // 1. Upload image to storage
+      // 2. Create drop in database
+      // 3. Call Member A's AI service to generate UI config
+      // 4. Create Flowglad product
 
-    // Simulate API call for now
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Simulate API call for now
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    setIsSubmitting(false);
-    setIsSuccess(true);
+      // Simulate 10% chance of error for testing
+      if (Math.random() < 0.1) {
+        throw new Error("Failed to generate AI configuration. Please try again.");
+      }
 
-    // Redirect to dashboard after success
-    setTimeout(() => {
-      window.location.href = "/admin/dashboard";
-    }, 1500);
+      setIsSubmitting(false);
+      setIsSuccess(true);
+      showToast("Drop created successfully! 🎉", "success");
+
+      // Redirect to dashboard after success
+      setTimeout(() => {
+        window.location.href = "/admin/dashboard";
+      }, 1500);
+    } catch (err) {
+      setIsSubmitting(false);
+      const errorMessage = err instanceof Error ? err.message : "Something went wrong. Please try again.";
+      setError(errorMessage);
+      setShowErrorDialog(true);
+      showToast(errorMessage, "error");
+    }
   };
 
   if (isSuccess) {
@@ -155,11 +184,43 @@ export function PreviewStep({ dropData, onBack }: PreviewStepProps) {
           ) : (
             <>
               <Sparkles className="mr-2 h-4 w-4" />
-              Create Drop
+              {error ? "Try Again" : "Create Drop"}
             </>
           )}
         </Button>
       </div>
+
+      {/* Error Dialog */}
+      <AlertDialog open={showErrorDialog} onOpenChange={setShowErrorDialog}>
+        <AlertDialogContent className="bg-neutral-900 border-neutral-800">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-white">
+              <AlertCircle className="h-5 w-5 text-red-400" />
+              Oops! Something went wrong
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-neutral-400">
+              {error || "An unexpected error occurred. Please try again."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-neutral-700">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setShowErrorDialog(false);
+                handleSubmit();
+              }}
+              className="bg-white text-black hover:bg-neutral-200"
+            >
+              Try Again
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Toast Container */}
+      <ToastContainer />
     </div>
   );
 }
