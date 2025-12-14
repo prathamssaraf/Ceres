@@ -43,8 +43,8 @@
 ---
 
 ### 🔧 **MEMBER B - Infrastructure Lead (Backend & Payments)**
-**Branches:** Multiple (`feat/infra-*`)
-**Status:** 75% Complete | ⚠️ Integration Critical
+**Branches:** `feat/infra-*` (Merged to `main`)
+**Status:** 100% Complete | ✅ Ready for Integration
 
 #### ✅ Completed:
 - **Project Setup** (`feat/infra-setup`)
@@ -52,25 +52,23 @@
   - Database schema: users, drops, metrics
 
 - **API Layer** (`feat/infra-api`)
-  - Server Actions: `createDrop()`, `getDropBySlug()`
+  - Server Actions: `createDrop()`, `publishDrop()`, `generateCheckoutLink()`
 
 - **Authentication** (`feat/infra-auth`)
   - Clerk middleware and provider setup
 
 - **Flowglad** (`feat/infra-flowglad`)
-  - `createFlowgladProduct()`, `createCheckoutSession()`
+  - SDK Wrapper, `createFlowgladProduct()`
+  - Publish workflow integrated with Database
 
 - **Webhooks** (`feat/infra-webhooks`)
   - Payment success handler
   - Auto inventory management
 
-#### 🔴 Current Tasks (CRITICAL - YOU ARE BLOCKER):
-1. **MERGE all infra branches** into one unified branch (`feat/infra-complete`)
-2. **Install missing packages:**
-   ```bash
-   npm install @clerk/nextjs uploadthing @uploadthing/react
-   # Note: Confirm actual flowglad package name
-   ```
+#### 🟢 Current Tasks:
+1. **Support Member A & C with Integration**
+2. **End-to-End Testing**
+
 3. **Create unified API endpoint:**
    - `src/app/actions/drops.ts` → Add `createDropWithVibe()`
    - Should: accept form data → call Member A's AI → save to DB → create Flowglad product
@@ -236,14 +234,10 @@ Add to `package.json`:
 ## 🔴 BLOCKERS (MUST RESOLVE NOW)
 
 ### Blocker #1: Member B's Branches Not Merged
-**Impact:** Cannot test integration
-**Owner:** Member B
-**Action:** Merge all `feat/infra-*` branches → Create `feat/infra-complete`
+**Status:** ✅ RESOLVED (Merged to main)
 
 ### Blocker #2: Missing Packages
-**Impact:** Build will fail
-**Owner:** Member B
-**Action:** `npm install` missing packages
+**Status:** ✅ RESOLVED
 
 ### Blocker #3: No Image Upload
 **Impact:** Onboarding cannot complete
