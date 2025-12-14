@@ -40,6 +40,12 @@ export function PreviewStep({ dropData, onBack }: PreviewStepProps) {
     setError(null);
 
     try {
+      console.log("🔍 Preview data before submit:", {
+        imagePreview: dropData.imagePreview,
+        imagePreviewType: typeof dropData.imagePreview,
+        startsWithHttp: dropData.imagePreview?.startsWith('http'),
+      });
+
       // Create FormData for the API
       const formData = new FormData();
       formData.append("name", dropData.name);
@@ -47,12 +53,24 @@ export function PreviewStep({ dropData, onBack }: PreviewStepProps) {
       formData.append("price", dropData.price.toString());
       formData.append("vibe", dropData.vibePrompt);
 
-      // Only send image URL if it's not a base64 data URL (too large for DB)
-      // If it starts with 'http', it's from Uploadthing, otherwise use placeholder
-      const imageUrl = dropData.imagePreview?.startsWith('http')
-        ? dropData.imagePreview
-        : 'https://placehold.co/600x400/png?text=Product+Image';
+      // Use the image URL from dropData
+      // It should be the cloud URL from UploadThing if upload succeeded
+      let imageUrl = 'https://placehold.co/600x400/png?text=Product+Image';
+
+      if (dropData.imagePreview) {
+        if (dropData.imagePreview.startsWith('http')) {
+          // It's a cloud URL from UploadThing - use it!
+          imageUrl = dropData.imagePreview;
+          console.log("✅ Using uploaded cloud URL:", imageUrl);
+        } else if (dropData.imagePreview.startsWith('data:image')) {
+          // It's a base64 data URL - means upload might have failed
+          console.warn("⚠️ Image is still base64 - upload may have failed, using placeholder");
+        }
+      }
+
       formData.append("imageUrl", imageUrl);
+
+      console.log("📤 Submitting with image URL:", imageUrl);
 
       formData.append("inventory", dropData.inventory?.toString() || "0");
 

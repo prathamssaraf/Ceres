@@ -70,7 +70,7 @@ export async function generateVibe(product: string, vibe?: string): Promise<Vibe
 
   try {
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-sonnet-4-20250514',
       max_tokens: 2048,
       temperature: 0.7,
       system: systemPrompt,
@@ -129,6 +129,13 @@ interface ProductInfo {
 }
 
 export async function generateCustomHTML(productInfo: ProductInfo): Promise<string> {
+  console.log("🎨 Generating HTML with product info:", {
+    name: productInfo.name,
+    imageUrl: productInfo.imageUrl,
+    price: productInfo.price,
+    vibe: productInfo.vibePrompt,
+  });
+
   const baseHTML = `
 <!DOCTYPE html>
 <html lang="en">
@@ -206,25 +213,69 @@ export async function generateCustomHTML(productInfo: ProductInfo): Promise<stri
   `;
 
   const systemPrompt = `
-You are an expert web designer and developer. You will receive:
-1. Product information (name, description, price, inventory, vibe/style prompt, image URL)
-2. A base HTML template
+You are an elite web designer and front-end developer specializing in high-converting, visually stunning product landing pages.
 
-Your task is to customize the HTML based on the product information and vibe/style prompt.
+Your task: Transform the provided base HTML template into a beautiful, on-brand product page that perfectly matches the specified vibe/aesthetic.
 
-REQUIREMENTS:
-- Keep the same structure and functionality (the handleBuy function, Tailwind classes)
-- Customize colors, fonts, layout, animations, and copy based on the vibe prompt
-- Make it visually stunning and match the product's vibe (e.g., "Luxury" = elegant fonts and gold accents, "Cyberpunk" = neon colors and sharp edges)
-- Use Tailwind CSS classes (the template already includes Tailwind CDN)
-- Ensure the product image, name, description, price, and inventory count are displayed
-- **CRITICAL**: You MUST use the EXACT image URL provided in the product information. Do NOT use placeholder images!
-- The image tag should be: <img src="{{IMAGE_URL}}" alt="{{PRODUCT_NAME}}" class="...">
-- Keep the button functional with onclick="handleBuy()"
-- Return ONLY the complete HTML code, no markdown code blocks or explanations
-- Make sure all text content is creative and matches the vibe
+CRITICAL RULES:
+1. **IMAGE URL**: You MUST use the EXACT image URL provided. Replace ALL instances of placeholder images with: ${productInfo.imageUrl}
+2. **NO PLACEHOLDERS**: The image src must be the real product image URL, not placehold.co or any placeholder
+3. **FUNCTIONALITY**: Keep the handleBuy() function intact - do not modify the JavaScript
+4. **TAILWIND ONLY**: Use only Tailwind CSS classes (CDN is included)
+5. **COMPLETE HTML**: Return ONLY the full HTML document, no markdown, no explanations, no code blocks
+6. **VIBE MATCHING**: The design MUST strongly reflect the vibe/aesthetic specified
 
-The HTML should be production-ready and visually impressive.
+DESIGN GUIDELINES BY VIBE:
+- **Luxury**: Gold/black palette, serif fonts (font-serif), elegant spacing, subtle animations, premium feel
+- **Minimalist**: Clean lines, lots of whitespace, simple colors (gray/white), sans-serif, understated
+- **Cyberpunk**: Neon colors (cyan/magenta/purple), futuristic fonts, glitch effects, dark backgrounds
+- **Streetwear**: Bold typography, graffiti-inspired, urban colors (orange/black), energetic
+- **Organic/Natural**: Earth tones (green/brown), rounded corners, soft shadows, calming
+- **Modern/Tech**: Clean gradients, sharp edges, blue/purple, glass morphism effects
+
+REQUIRED ELEMENTS:
+- Product image with proper aspect ratio and styling
+- Product name as prominent headline
+- Product description (rewrite creatively to match vibe)
+- Price displayed clearly and stylishly
+- Inventory/stock status with visual indicator
+- Call-to-action button with engaging copy (not just "Buy Now" - be creative!)
+- Responsive design (mobile-first)
+
+QUALITY STANDARDS:
+- Typography hierarchy must be clear
+- Color palette must be cohesive (2-4 colors max)
+- Hover states and transitions for interactivity
+- Professional spacing and alignment
+- Visual interest through gradients, shadows, or animations
+- Copy should be punchy and match the vibe
+
+Return ONLY the HTML. No markdown formatting, no explanations.
+`;
+
+  const userPrompt = `
+PRODUCT DETAILS:
+Name: ${productInfo.name}
+Description: ${productInfo.description}
+Price: $${(productInfo.price / 100).toFixed(2)}
+Inventory: ${productInfo.inventoryCount} units in stock
+Vibe/Aesthetic: ${productInfo.vibePrompt}
+
+🔴 CRITICAL - PRODUCT IMAGE URL (USE EXACTLY AS PROVIDED):
+${productInfo.imageUrl}
+
+BASE HTML TEMPLATE TO CUSTOMIZE:
+${baseHTML}
+
+INSTRUCTIONS:
+1. Replace the placeholder image src with the exact URL above: ${productInfo.imageUrl}
+2. Customize the design to match the "${productInfo.vibePrompt}" vibe
+3. Rewrite all copy to be engaging and match the aesthetic
+4. Ensure price shows as $${(productInfo.price / 100).toFixed(2)}
+5. Show inventory as "${productInfo.inventoryCount} in stock"
+6. Make the CTA button copy creative and vibe-appropriate
+
+Create a stunning, production-ready HTML page that sells this product.
 `;
 
   try {
@@ -236,52 +287,41 @@ The HTML should be production-ready and visually impressive.
       messages: [
         {
           role: 'user',
-          content: [
-            {
-              type: 'image',
-              source: {
-                type: 'url',
-                url: productInfo.imageUrl,
-              },
-            },
-            {
-              type: 'text',
-              text: `
-Product Information:
-- Name: ${productInfo.name}
-- Description: ${productInfo.description}
-- Price: $${(productInfo.price / 100).toFixed(2)}
-- Inventory: ${productInfo.inventoryCount} in stock
-- Vibe/Style: ${productInfo.vibePrompt}
-- **Product Image URL (USE THIS EXACT URL)**: ${productInfo.imageUrl}
-
-Above, you can SEE the actual product image. Use your visual understanding of this image to create amazing copy and design that matches the product.
-
-Base HTML Template:
-${baseHTML}
-
-IMPORTANT: Replace the image src with the EXACT URL provided above: ${productInfo.imageUrl}
-
-Please customize this HTML to match the product's vibe while keeping all the functionality intact.
-`,
-            },
-          ],
+          content: userPrompt,
         },
       ],
     });
 
     const content = message.content[0].type === 'text' ? message.content[0].text : '';
     // Remove any markdown code block syntax if present
-    const htmlString = content
+    let htmlString = content
       .replace(/```html/g, '')
       .replace(/```/g, '')
       .trim();
+
+    // CRITICAL FIX: Ensure the correct image URL is in the final HTML
+    // Replace any placeholder or wrong image URLs with the correct one
+    htmlString = htmlString.replace(
+      /https:\/\/placehold\.co\/[^"'\s]*/g,
+      productInfo.imageUrl
+    );
+
+    // Also replace any remaining Product+Image placeholders
+    htmlString = htmlString.replace(
+      /text=Product\+Image/g,
+      `Product: ${productInfo.name}`
+    );
+
+    console.log("✅ HTML generated successfully with image URL:", productInfo.imageUrl);
 
     return htmlString;
 
   } catch (error) {
     console.error('Error generating custom HTML:', error);
-    // Return the base template as fallback
-    return baseHTML;
+    // Return the base template with correct image as fallback
+    return baseHTML.replace(
+      'https://placehold.co/600x400/png?text=Product+Image',
+      productInfo.imageUrl
+    );
   }
 }
