@@ -20,10 +20,11 @@ class MockFlowglad {
 
   checkouts = {
     create: async (data: { productId: string; successUrl: string; cancelUrl: string }) => {
-      // Mock checkout session - returns a mock checkout URL
+      // Mock checkout session - returns a localhost checkout URL for demo
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
       return {
         id: `checkout_${Date.now()}`,
-        url: `https://flowglad.xyz/checkout/${data.productId}`,
+        url: `${baseUrl}/checkout/${data.productId}`,
         productId: data.productId,
         successUrl: data.successUrl,
         cancelUrl: data.cancelUrl,
