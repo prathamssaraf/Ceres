@@ -44,6 +44,7 @@ export async function getDropBySlug(slug: string) {
 }
 
 import { createFlowgladProduct, createCheckoutSession } from "@/lib/flowglad";
+import { generateVibe } from "@/lib/ai/service";
 
 export async function publishDrop(dropId: number) {
   const { userId } = await auth();
@@ -106,13 +107,8 @@ export async function createDropWithVibe(formData: FormData) {
 
   if (!nam || !price || !vibe) throw new Error("Missing fields");
 
-  // 1. Generate Vibe Config (Mocking Member A's part for now)
-  // In real integration, we'd import generateVibe from "@/lib/ai/service"
-  const mockAiConfig = {
-    theme: "cyberpunk",
-    colors: { primary: "#0f0", background: "#000" },
-    copy: { cta: "Jack In" }
-  };
+  // 1. Generate Vibe Config using AI
+  const vibeConfig = await generateVibe(nam, vibe);
 
   // 2. Create DB Entry
   const slug = nam.toLowerCase().replace(/ /g, "-") + "-" + Date.now().toString().slice(-4);
@@ -124,7 +120,7 @@ export async function createDropWithVibe(formData: FormData) {
     inventoryCount: inv,
     vibePrompt: vibe,
     imageUrl: imgUrl,
-    generatedUiConfig: mockAiConfig,
+    generatedUiConfig: vibeConfig,
     slug,
     status: "draft",
     userId: userId,

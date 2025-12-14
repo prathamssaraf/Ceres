@@ -156,12 +156,12 @@ export function AISuggestions({
         </div>
 
         {/* Social Posts for Ghost State */}
-        {state === "ghost" && config.socialPosts && (
+        {state === "ghost" && suggestions.ghost.socialPosts && (
           <div className="space-y-2">
             <p className="text-xs text-neutral-400 uppercase tracking-wide font-semibold">
               Ready-to-Post Templates:
             </p>
-            {config.socialPosts.map((post, index) => (
+            {suggestions.ghost.socialPosts.map((post, index) => (
               <div
                 key={index}
                 className="bg-neutral-800/50 rounded-lg p-3 text-sm text-neutral-300 relative group cursor-pointer hover:bg-neutral-800 transition-colors"

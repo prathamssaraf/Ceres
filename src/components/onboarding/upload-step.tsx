@@ -2,8 +2,9 @@
 
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Upload, Image as ImageIcon } from "lucide-react";
+import { Upload, Image as ImageIcon, Loader2 } from "lucide-react";
 import { DropData } from "@/app/onboarding/page";
+import { useUploadThing } from "@/lib/uploadthing";
 
 type UploadStepProps = {
   dropData: DropData;
@@ -21,9 +22,27 @@ export function UploadStep({
 }: UploadStepProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const handleFileChange = (file: File) => {
+  const { startUpload } = useUploadThing("imageUploader", {
+    onClientUploadComplete: (res) => {
+      if (res && res[0]) {
+        updateDropData({
+          imagePreview: res[0].url,
+        });
+        setIsUploading(false);
+      }
+    },
+    onUploadError: (error) => {
+      console.error("Upload error:", error);
+      alert("Upload failed: " + error.message);
+      setIsUploading(false);
+    },
+  });
+
+  const handleFileChange = async (file: File) => {
     if (file && file.type.startsWith("image/")) {
+      // Show preview immediately
       const reader = new FileReader();
       reader.onloadend = () => {
         updateDropData({
@@ -32,6 +51,15 @@ export function UploadStep({
         });
       };
       reader.readAsDataURL(file);
+
+      // Upload to cloud
+      setIsUploading(true);
+      try {
+        await startUpload([file]);
+      } catch (error) {
+        console.error("Upload failed:", error);
+        setIsUploading(false);
+      }
     }
   };
 
@@ -144,11 +172,18 @@ export function UploadStep({
       <div className="flex justify-end pt-6">
         <Button
           onClick={handleNext}
-          disabled={!dropData.imageFile}
+          disabled={!dropData.imageFile || isUploading}
           size="lg"
           className="bg-white text-black hover:bg-neutral-200"
         >
-          Continue
+          {isUploading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Uploading...
+            </>
+          ) : (
+            "Continue"
+          )}
         </Button>
       </div>
     </div>

@@ -17,6 +17,7 @@ import {
 import { ArrowLeft, Check, Loader2, Sparkles, AlertCircle } from "lucide-react";
 import { DropData } from "@/app/onboarding/page";
 import { useToast } from "@/components/ui/toast";
+import { createDropWithVibe } from "@/app/actions/drops";
 
 type PreviewStepProps = {
   dropData: DropData;
@@ -39,28 +40,30 @@ export function PreviewStep({ dropData, onBack }: PreviewStepProps) {
     setError(null);
 
     try {
-      // TODO: Connect to Member B's API to:
-      // 1. Upload image to storage
-      // 2. Create drop in database
-      // 3. Call Member A's AI service to generate UI config
-      // 4. Create Flowglad product
+      // Create FormData for the API
+      const formData = new FormData();
+      formData.append("name", dropData.name);
+      formData.append("description", dropData.description || "");
+      formData.append("price", dropData.price.toString());
+      formData.append("vibe", dropData.vibePrompt);
+      formData.append("imageUrl", dropData.imagePreview || "");
+      formData.append("inventory", dropData.inventory?.toString() || "0");
 
-      // Simulate API call for now
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Call the real API
+      const result = await createDropWithVibe(formData);
 
-      // Simulate 10% chance of error for testing
-      if (Math.random() < 0.1) {
-        throw new Error("Failed to generate AI configuration. Please try again.");
+      if (result.success) {
+        setIsSubmitting(false);
+        setIsSuccess(true);
+        showToast("Drop created successfully! 🎉", "success");
+
+        // Redirect to dashboard after success
+        setTimeout(() => {
+          window.location.href = "/admin/dashboard";
+        }, 1500);
+      } else {
+        throw new Error("Failed to create drop");
       }
-
-      setIsSubmitting(false);
-      setIsSuccess(true);
-      showToast("Drop created successfully! 🎉", "success");
-
-      // Redirect to dashboard after success
-      setTimeout(() => {
-        window.location.href = "/admin/dashboard";
-      }, 1500);
     } catch (err) {
       setIsSubmitting(false);
       const errorMessage = err instanceof Error ? err.message : "Something went wrong. Please try again.";

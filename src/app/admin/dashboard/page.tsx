@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatusCard, DashboardState } from "@/components/dashboard/status-card";
 import { AISuggestions } from "@/components/dashboard/ai-suggestions";
+import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton";
+import { getMyDrops, getDropMetrics } from "@/app/actions/metrics";
 import {
   ExternalLink,
   Copy,
@@ -59,6 +61,7 @@ export default function DashboardPage() {
   const [metrics, setMetrics] = useState(MOCK_METRICS);
   const [drop, setDrop] = useState(MOCK_DROP);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Calculate state and conversion rate
   const dashboardState = calculateDashboardState(metrics.views, metrics.sales);
@@ -66,13 +69,52 @@ export default function DashboardPage() {
     metrics.views > 0 ? (metrics.sales / metrics.views) * 100 : 0;
   const dropUrl = `https://flashdrop.xyz/drop/${drop.slug}`;
 
-  // TODO: Replace with real-time data fetching from Member B's API
+  // Fetch real data from API
   useEffect(() => {
-    // Simulate real-time updates
+    async function loadDashboardData() {
+      try {
+        setIsLoading(true);
+
+        // Fetch user's drops
+        const drops = await getMyDrops();
+
+        if (drops && drops.length > 0) {
+          // Use the most recent drop
+          const latestDrop = drops[0];
+          setDrop({
+            id: latestDrop.id,
+            name: latestDrop.name,
+            description: latestDrop.description || "",
+            price: latestDrop.price,
+            inventoryCount: latestDrop.inventoryCount,
+            inventoryRemaining: latestDrop.inventoryCount, // TODO: Track actual remaining
+            vibePrompt: latestDrop.vibePrompt,
+            status: latestDrop.status || "draft",
+            slug: latestDrop.slug || "",
+            createdAt: latestDrop.createdAt || new Date(),
+          });
+
+          // Fetch metrics for this drop
+          const dropMetrics = await getDropMetrics(latestDrop.id);
+          setMetrics({
+            views: dropMetrics.views || 0,
+            sales: dropMetrics.sales || 0,
+            revenue: dropMetrics.revenue || 0,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to load dashboard data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadDashboardData();
+
+    // Set up real-time updates every 10 seconds
     const interval = setInterval(() => {
-      // In production, this would fetch from your API
-      // setMetrics(await fetchMetrics(drop.id));
-    }, 5000);
+      loadDashboardData();
+    }, 10000);
 
     return () => clearInterval(interval);
   }, []);
@@ -82,6 +124,10 @@ export default function DashboardPage() {
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
   };
+
+  if (isLoading) {
+    return <DashboardSkeleton />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 p-6">
