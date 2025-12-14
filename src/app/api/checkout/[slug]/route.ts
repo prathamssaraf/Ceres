@@ -6,10 +6,10 @@ import { generateCheckoutLink } from "@/app/actions/drops";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = params;
+    const { slug } = await params;
 
     // Find the drop by slug
     const drop = await db.query.drops.findFirst({
