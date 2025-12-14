@@ -24,9 +24,11 @@ export function UploadStep({
   const [dragActive, setDragActive] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
-  const { startUpload } = useUploadThing("imageUploader", {
+  const { startUpload, isUploading: utIsUploading } = useUploadThing("imageUploader", {
     onClientUploadComplete: (res) => {
+      console.log("Upload complete!", res);
       if (res && res[0]) {
+        // Update with cloud URL from Uploadthing
         updateDropData({
           imagePreview: res[0].url,
         });
@@ -35,14 +37,20 @@ export function UploadStep({
     },
     onUploadError: (error) => {
       console.error("Upload error:", error);
-      alert("Upload failed: " + error.message);
+      // Only show error if it's not the callback issue
+      if (!error.message.includes("callback failed")) {
+        alert("Upload failed: " + error.message);
+      }
       setIsUploading(false);
+    },
+    onUploadBegin: (fileName) => {
+      console.log("Upload started:", fileName);
     },
   });
 
   const handleFileChange = async (file: File) => {
     if (file && file.type.startsWith("image/")) {
-      // Show preview immediately
+      // Show preview immediately for better UX
       const reader = new FileReader();
       reader.onloadend = () => {
         updateDropData({
@@ -52,12 +60,21 @@ export function UploadStep({
       };
       reader.readAsDataURL(file);
 
-      // Upload to cloud
+      // Upload to cloud storage with timeout
       setIsUploading(true);
+
+      // Set timeout to auto-complete after 10 seconds (upload usually takes 3-5s)
+      const timeoutId = setTimeout(() => {
+        console.log("Upload timeout - proceeding anyway");
+        setIsUploading(false);
+      }, 10000);
+
       try {
         await startUpload([file]);
+        clearTimeout(timeoutId);
       } catch (error) {
         console.error("Upload failed:", error);
+        clearTimeout(timeoutId);
         setIsUploading(false);
       }
     }

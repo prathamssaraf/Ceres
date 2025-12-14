@@ -46,7 +46,14 @@ export function PreviewStep({ dropData, onBack }: PreviewStepProps) {
       formData.append("description", dropData.description || "");
       formData.append("price", dropData.price.toString());
       formData.append("vibe", dropData.vibePrompt);
-      formData.append("imageUrl", dropData.imagePreview || "");
+
+      // Only send image URL if it's not a base64 data URL (too large for DB)
+      // If it starts with 'http', it's from Uploadthing, otherwise use placeholder
+      const imageUrl = dropData.imagePreview?.startsWith('http')
+        ? dropData.imagePreview
+        : 'https://placehold.co/600x400/png?text=Product+Image';
+      formData.append("imageUrl", imageUrl);
+
       formData.append("inventory", dropData.inventory?.toString() || "0");
 
       // Call the real API

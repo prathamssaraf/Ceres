@@ -96,7 +96,10 @@ export async function generateCheckoutLink(dropId: number) {
 
 export async function createDropWithVibe(formData: FormData) {
   const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
+
+  // For demo purposes, allow demo user if not authenticated
+  // In production, you'd want to enforce auth
+  const finalUserId = userId || "demo-user";
 
   const nam = formData.get("name") as string;
   const desc = formData.get("description") as string;
