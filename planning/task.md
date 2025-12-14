@@ -4,12 +4,12 @@
 - [x] **Project Setup**
     - [x] Initialize Next.js 14 project (App Router, TypeScript, Tailwind)
     - [x] Set up Shadcn/UI for "Admin" components
-    - [ ] Configure PostgreSQL database (Supabase or Neon)
-    - [ ] Set up Prisma/Drizzle ORM
-- [ ] **Database Schema Design**
-    - [ ] Define `User` (Seller) table
-    - [ ] Define `Drop` table (product details, vibe prompt, generated_ui_config, status)
-    - [ ] Define `Metric` table (visits, sales, conversion_rate)
+    - [x] Configure PostgreSQL database (Supabase or Neon)
+    - [x] Set up Prisma/Drizzle ORM
+- [x] **Database Schema Design**
+    - [x] Define `User` (Seller) table
+    - [x] Define `Drop` table (product details, vibe prompt, generated_ui_config, status)
+    - [x] Define `Metric` table (visits, sales, conversion_rate)
 - [ ] **Authentication**
     - [ ] Implement Clerk or NextAuth for Seller Login
 - [ ] **API Layer**
