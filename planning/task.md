@@ -1,9 +1,9 @@
 # Flash-Drop Task List
 
 ## Phase 1: Core Infrastructure (Team B)
-- [ ] **Project Setup**
-    - [ ] Initialize Next.js 14 project (App Router, TypeScript, Tailwind)
-    - [ ] Set up Shadcn/UI for "Admin" components
+- [x] **Project Setup**
+    - [x] Initialize Next.js 14 project (App Router, TypeScript, Tailwind)
+    - [x] Set up Shadcn/UI for "Admin" components
     - [ ] Configure PostgreSQL database (Supabase or Neon)
     - [ ] Set up Prisma/Drizzle ORM
 - [ ] **Database Schema Design**
