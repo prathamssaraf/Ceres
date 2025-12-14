@@ -10,10 +10,10 @@
     - [x] Define `User` (Seller) table
     - [x] Define `Drop` table (product details, vibe prompt, generated_ui_config, status)
     - [x] Define `Metric` table (visits, sales, conversion_rate)
-- [ ] **Authentication**
-    - [ ] Implement Clerk or NextAuth for Seller Login
-- [ ] **API Layer**
-    - [ ] Create TRPC or Next.js Server Actions for CRUD on Drops
+- [x] **Authentication**
+    - [x] Implement Clerk or NextAuth for Seller Login
+- [x] **API Layer**
+    - [x] Create TRPC or Next.js Server Actions for CRUD on Drops
 
 ## Phase 2: The "Vibe Engine" (Team A)
 - [ ] **AI Generation Service**
@@ -34,13 +34,13 @@
     - [ ] Implement Vibe-based feedback loop (e.g., if conversion < 2%, show "Optimize" alert).
 
 ## Phase 4: Payments & Commerce (Team B)
-- [ ] **Flowglad Integration**
-    - [ ] Set up Flowglad SDK.
-    - [ ] Implement `createProduct` workflow when Seller publishes a drop.
-    - [ ] Create Checkout Link generation.
-- [ ] **Webhooks**
-    - [ ] Listen for Flowglad `payment.success` events.
-    - [ ] Update inventory and "Sold Out" state in real-time.
+- [/] **Flowglad Integration**
+    - [x] Set up Flowglad SDK.
+    - [x] Implement `createProduct` workflow when Seller publishes a drop.
+    - [x] Create Checkout Link generation.
+- [x] **Webhooks**
+    - [x] Listen for Flowglad `payment.success` events.
+    - [x] Update inventory and "Sold Out" state in real-time.
 
 ## Phase 5: Integration & Polish (All)
 - [ ] **End-to-End Testing**
