@@ -6,6 +6,18 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '10mb', // Increase limit to handle image uploads
     },
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'placehold.co',
+      },
+      {
+        protocol: 'https',
+        hostname: 'utfs.io',
+      },
+    ],
+  },
 };
 
 export default nextConfig;

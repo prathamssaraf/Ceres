@@ -12,6 +12,7 @@ export default async function DropPage({ params }: { params: Promise<{ slug: str
 
     let config: VibeConfig;
     let dropId: number | undefined;
+    let productData: any = null;
 
     // 1. Try to fetch from Database
     try {
@@ -20,11 +21,18 @@ export default async function DropPage({ params }: { params: Promise<{ slug: str
         if (dbDrops.length > 0 && dbDrops[0].generatedUiConfig) {
             // Found in DB! Use the stored config.
             config = dbDrops[0].generatedUiConfig as unknown as VibeConfig;
-            dropId = dbDrops[0].id; // Use implicit number type from schema
+            dropId = dbDrops[0].id;
+            productData = {
+                name: dbDrops[0].name,
+                description: dbDrops[0].description,
+                price: dbDrops[0].price,
+                inventoryCount: dbDrops[0].inventoryCount,
+                imageUrl: dbDrops[0].imageUrl,
+                status: dbDrops[0].status,
+            };
             console.log(`[DropPage] Loaded config from DB for slug: ${slug}, ID: ${dropId}`);
         } else {
             // 2. Not found in DB? Fallback to "On-the-Fly" Generation (For Demo/Testing)
-            // This allows us to test "vibes" without creating a full drop record first.
             console.log(`[DropPage] Drop not found in DB. generating on the fly for slug: ${slug}`);
             const rawParams = slug.split('-');
             const vibeInfo = rawParams[0];
@@ -45,7 +53,7 @@ export default async function DropPage({ params }: { params: Promise<{ slug: str
 
     return (
         <main>
-            <VibeRenderer config={config} dropId={dropId} />
+            <VibeRenderer config={config} dropId={dropId} productData={productData} />
         </main>
     );
 }
