@@ -218,26 +218,13 @@ REQUIREMENTS:
 - Make it visually stunning and match the product's vibe (e.g., "Luxury" = elegant fonts and gold accents, "Cyberpunk" = neon colors and sharp edges)
 - Use Tailwind CSS classes (the template already includes Tailwind CDN)
 - Ensure the product image, name, description, price, and inventory count are displayed
+- **CRITICAL**: You MUST use the EXACT image URL provided in the product information. Do NOT use placeholder images!
+- The image tag should be: <img src="{{IMAGE_URL}}" alt="{{PRODUCT_NAME}}" class="...">
 - Keep the button functional with onclick="handleBuy()"
 - Return ONLY the complete HTML code, no markdown code blocks or explanations
 - Make sure all text content is creative and matches the vibe
 
 The HTML should be production-ready and visually impressive.
-`;
-
-  const userPrompt = `
-Product Information:
-- Name: ${productInfo.name}
-- Description: ${productInfo.description}
-- Price: $${(productInfo.price / 100).toFixed(2)}
-- Inventory: ${productInfo.inventoryCount} in stock
-- Vibe/Style: ${productInfo.vibePrompt}
-- Image URL: ${productInfo.imageUrl}
-
-Base HTML Template:
-${baseHTML}
-
-Please customize this HTML to match the product's vibe while keeping all the functionality intact.
 `;
 
   try {
@@ -247,7 +234,39 @@ Please customize this HTML to match the product's vibe while keeping all the fun
       temperature: 0.8,
       system: systemPrompt,
       messages: [
-        { role: 'user', content: userPrompt }
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: {
+                type: 'url',
+                url: productInfo.imageUrl,
+              },
+            },
+            {
+              type: 'text',
+              text: `
+Product Information:
+- Name: ${productInfo.name}
+- Description: ${productInfo.description}
+- Price: $${(productInfo.price / 100).toFixed(2)}
+- Inventory: ${productInfo.inventoryCount} in stock
+- Vibe/Style: ${productInfo.vibePrompt}
+- **Product Image URL (USE THIS EXACT URL)**: ${productInfo.imageUrl}
+
+Above, you can SEE the actual product image. Use your visual understanding of this image to create amazing copy and design that matches the product.
+
+Base HTML Template:
+${baseHTML}
+
+IMPORTANT: Replace the image src with the EXACT URL provided above: ${productInfo.imageUrl}
+
+Please customize this HTML to match the product's vibe while keeping all the functionality intact.
+`,
+            },
+          ],
+        },
       ],
     });
 
