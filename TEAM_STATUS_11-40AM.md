@@ -240,9 +240,7 @@ Add to `package.json`:
 **Status:** ✅ RESOLVED
 
 ### Blocker #3: No Image Upload
-**Impact:** Onboarding cannot complete
-**Owner:** Member B
-**Action:** Set up Uploadthing (15 min setup)
+**Status:** ✅ RESOLVED (Uploadthing configured)
 
 ### Blocker #4: No Unified API
 **Impact:** Member C cannot connect onboarding
