@@ -42,3 +42,53 @@ export async function getDropBySlug(slug: string) {
   });
   return drop;
 }
+
+import { createFlowgladProduct, createCheckoutSession } from "@/lib/flowglad";
+
+export async function publishDrop(dropId: number) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const drop = await db.query.drops.findFirst({
+    where: eq(drops.id, dropId),
+  });
+
+  if (!drop) throw new Error("Drop not found");
+  if (drop.userId !== userId) throw new Error("Unauthorized");
+
+  // Create product in Flowglad
+  const flowgladProduct = await createFlowgladProduct({
+    name: drop.name,
+    price: drop.price,
+    slug: drop.slug || "",
+  });
+
+  // Update DB
+  await db.update(drops)
+    .set({
+      status: "active",
+      flowgladProductId: flowgladProduct.id,
+    })
+    .where(eq(drops.id, dropId));
+
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
+export async function generateCheckoutLink(dropId: number) {
+  // Can be public or protected depending on flow. Assuming public for buyer.
+  const drop = await db.query.drops.findFirst({
+    where: eq(drops.id, dropId),
+  });
+
+  if (!drop || drop.status !== "active" || !drop.flowgladProductId) {
+    throw new Error("Drop not available for purchase");
+  }
+
+  // Generate session
+  // We need a success URL. For now, localhost or generic.
+  const successUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/drop/${drop.slug}/success`;
+  
+  const session = await createCheckoutSession(drop.flowgladProductId, successUrl);
+  return { url: session.url };
+}

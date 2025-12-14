@@ -34,10 +34,10 @@
     - [ ] Implement Vibe-based feedback loop (e.g., if conversion < 2%, show "Optimize" alert).
 
 ## Phase 4: Payments & Commerce (Team B)
-- [ ] **Flowglad Integration**
-    - [ ] Set up Flowglad SDK.
-    - [ ] Implement `createProduct` workflow when Seller publishes a drop.
-    - [ ] Create Checkout Link generation.
+- [/] **Flowglad Integration**
+    - [x] Set up Flowglad SDK.
+    - [x] Implement `createProduct` workflow when Seller publishes a drop.
+    - [x] Create Checkout Link generation.
 - [ ] **Webhooks**
     - [ ] Listen for Flowglad `payment.success` events.
     - [ ] Update inventory and "Sold Out" state in real-time.
