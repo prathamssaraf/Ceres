@@ -38,9 +38,9 @@
     - [x] Set up Flowglad SDK.
     - [x] Implement `createProduct` workflow when Seller publishes a drop.
     - [x] Create Checkout Link generation.
-- [ ] **Webhooks**
-    - [ ] Listen for Flowglad `payment.success` events.
-    - [ ] Update inventory and "Sold Out" state in real-time.
+- [x] **Webhooks**
+    - [x] Listen for Flowglad `payment.success` events.
+    - [x] Update inventory and "Sold Out" state in real-time.
 
 ## Phase 5: Integration & Polish (All)
 - [ ] **End-to-End Testing**
