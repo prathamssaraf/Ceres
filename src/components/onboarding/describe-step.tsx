@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Check } from "lucide-react";
 import { DropData } from "@/app/onboarding/page";
 
 type DescribeStepProps = {
@@ -46,6 +47,53 @@ export function DescribeStep({
           Describe Your Drop
         </h2>
         <p className="text-neutral-400">Tell us about your product</p>
+        {/* Progress Indicators */}
+        <div className="flex items-center justify-center gap-2 mt-4">
+          <Badge
+            variant={dropData.name ? "default" : "outline"}
+            className={
+              dropData.name
+                ? "bg-green-500/20 text-green-400 border-green-500/50"
+                : "border-neutral-700 text-neutral-500"
+            }
+          >
+            {dropData.name && <Check className="h-3 w-3 mr-1" />}
+            Name
+          </Badge>
+          <Badge
+            variant={dropData.description ? "default" : "outline"}
+            className={
+              dropData.description
+                ? "bg-green-500/20 text-green-400 border-green-500/50"
+                : "border-neutral-700 text-neutral-500"
+            }
+          >
+            {dropData.description && <Check className="h-3 w-3 mr-1" />}
+            Description
+          </Badge>
+          <Badge
+            variant={dropData.price ? "default" : "outline"}
+            className={
+              dropData.price
+                ? "bg-green-500/20 text-green-400 border-green-500/50"
+                : "border-neutral-700 text-neutral-500"
+            }
+          >
+            {dropData.price && <Check className="h-3 w-3 mr-1" />}
+            Price
+          </Badge>
+          <Badge
+            variant={dropData.inventory ? "default" : "outline"}
+            className={
+              dropData.inventory
+                ? "bg-green-500/20 text-green-400 border-green-500/50"
+                : "border-neutral-700 text-neutral-500"
+            }
+          >
+            {dropData.inventory && <Check className="h-3 w-3 mr-1" />}
+            Stock
+          </Badge>
+        </div>
       </div>
 
       {/* Form Fields */}
