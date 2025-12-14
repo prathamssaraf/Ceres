@@ -10,8 +10,8 @@
     - [x] Define `User` (Seller) table
     - [x] Define `Drop` table (product details, vibe prompt, generated_ui_config, status)
     - [x] Define `Metric` table (visits, sales, conversion_rate)
-- [ ] **Authentication**
-    - [ ] Implement Clerk or NextAuth for Seller Login
+- [x] **Authentication**
+    - [x] Implement Clerk or NextAuth for Seller Login
 - [ ] **API Layer**
     - [ ] Create TRPC or Next.js Server Actions for CRUD on Drops
 
