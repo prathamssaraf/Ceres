@@ -12,8 +12,8 @@
     - [x] Define `Metric` table (visits, sales, conversion_rate)
 - [x] **Authentication**
     - [x] Implement Clerk or NextAuth for Seller Login
-- [ ] **API Layer**
-    - [ ] Create TRPC or Next.js Server Actions for CRUD on Drops
+- [x] **API Layer**
+    - [x] Create TRPC or Next.js Server Actions for CRUD on Drops
 
 ## Phase 2: The "Vibe Engine" (Team A)
 - [ ] **AI Generation Service**
