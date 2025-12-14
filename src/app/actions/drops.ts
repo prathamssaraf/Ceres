@@ -44,7 +44,7 @@ export async function getDropBySlug(slug: string) {
 }
 
 import { createFlowgladProduct, createCheckoutSession } from "@/lib/flowglad";
-import { generateVibe } from "@/lib/ai/service";
+import { generateVibe, generateCustomHTML } from "@/lib/ai/service";
 
 export async function publishDrop(dropId: number) {
   const { userId } = await auth();
@@ -103,19 +103,30 @@ export async function createDropWithVibe(formData: FormData) {
 
   const nam = formData.get("name") as string;
   const desc = formData.get("description") as string;
-  const price = Number(formData.get("price"));
+  const priceInDollars = Number(formData.get("price"));
+  const price = Math.round(priceInDollars * 100); // Convert dollars to cents
   const vibe = formData.get("vibe") as string;
   const imgUrl = formData.get("imageUrl") as string;
   const inv = Number(formData.get("inventory"));
 
   if (!nam || !price || !vibe) throw new Error("Missing fields");
 
-  // 1. Generate Vibe Config using AI
+  // 1. Generate Vibe Config using AI (for backward compatibility)
   const vibeConfig = await generateVibe(nam, vibe);
 
-  // 2. Create DB Entry
+  // 2. Generate Custom HTML using Claude
+  const customHtml = await generateCustomHTML({
+    name: nam,
+    description: desc || "Premium quality product",
+    price: price,
+    inventoryCount: inv,
+    vibePrompt: vibe,
+    imageUrl: imgUrl,
+  });
+
+  // 3. Create DB Entry
   const slug = nam.toLowerCase().replace(/ /g, "-") + "-" + Date.now().toString().slice(-4);
-  
+
   const [newDrop] = await db.insert(drops).values({
     name: nam,
     description: desc,
@@ -124,24 +135,25 @@ export async function createDropWithVibe(formData: FormData) {
     vibePrompt: vibe,
     imageUrl: imgUrl,
     generatedUiConfig: vibeConfig,
+    customHtml: customHtml,
     slug,
     status: "draft",
     userId: userId,
   }).returning();
 
-  // 3. Create Flowglad Product
+  // 4. Create Flowglad Product
   try {
      const flowgladProduct = await createFlowgladProduct({
       name: nam,
       price: price,
       slug: slug,
     });
-    
+
     // Update with Flowglad ID and set to active
     await db.update(drops)
-      .set({ 
+      .set({
         flowgladProductId: flowgladProduct.id,
-        status: "active" 
+        status: "active"
       })
       .where(eq(drops.id, newDrop.id));
 

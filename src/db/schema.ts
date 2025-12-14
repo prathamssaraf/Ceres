@@ -15,6 +15,7 @@ export const drops = pgTable("drops", {
   inventoryCount: integer("inventory_count").notNull(),
   vibePrompt: text("vibe_prompt").notNull(),
   generatedUiConfig: jsonb("generated_ui_config"),
+  customHtml: text("custom_html"), // AI-generated custom HTML for the drop page
   status: text("status").default("draft"), // draft, active, sold_out
   imageUrl: text("image_url"),
   flowgladProductId: text("flowglad_product_id"),

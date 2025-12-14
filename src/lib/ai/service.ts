@@ -118,3 +118,151 @@ export async function generateVibe(product: string, vibe?: string): Promise<Vibe
     };
   }
 }
+
+interface ProductInfo {
+  name: string;
+  description: string;
+  price: number;
+  inventoryCount: number;
+  vibePrompt: string;
+  imageUrl: string;
+}
+
+export async function generateCustomHTML(productInfo: ProductInfo): Promise<string> {
+  const baseHTML = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${productInfo.name}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+  <div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+    <div class="container mx-auto px-4 py-12 md:py-20">
+      <div class="grid md:grid-cols-2 gap-12 items-center max-w-7xl mx-auto">
+        <!-- Product Image -->
+        <div class="relative group">
+          <div class="absolute -inset-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl opacity-20 group-hover:opacity-30 blur-2xl transition-opacity duration-500"></div>
+          <div class="relative bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200">
+            <img src="${productInfo.imageUrl}" alt="${productInfo.name}" class="w-full aspect-square object-cover">
+          </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="space-y-8">
+          <div>
+            <h1 class="text-5xl md:text-7xl font-black mb-4 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent leading-tight">
+              ${productInfo.name}
+            </h1>
+            <p class="text-xl md:text-2xl text-gray-600 leading-relaxed">
+              Premium quality product
+            </p>
+          </div>
+
+          <p class="text-lg text-gray-700 leading-relaxed border-l-4 border-blue-500 pl-4">
+            ${productInfo.description}
+          </p>
+
+          <!-- Price -->
+          <div class="flex items-baseline gap-4">
+            <span class="text-5xl font-bold text-gray-900">
+              $${(productInfo.price / 100).toFixed(2)}
+            </span>
+            <span class="text-lg text-gray-500">per unit</span>
+          </div>
+
+          <!-- Inventory Status -->
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span class="text-green-700 font-medium">
+              ${productInfo.inventoryCount} in stock
+            </span>
+          </div>
+
+          <!-- CTA Button -->
+          <button onclick="handleBuy()" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold text-lg px-8 py-5 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center gap-3">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+            Shop Now
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function handleBuy() {
+      // This will be replaced with actual checkout logic
+      alert('Checkout coming soon!');
+    }
+  </script>
+</body>
+</html>
+  `;
+
+  const systemPrompt = `
+You are an expert web designer and developer. You will receive:
+1. Product information (name, description, price, inventory, vibe/style prompt, image URL)
+2. A base HTML template
+
+Your task is to customize the HTML based on the product information and vibe/style prompt.
+
+REQUIREMENTS:
+- Keep the same structure and functionality (the handleBuy function, Tailwind classes)
+- Customize colors, fonts, layout, animations, and copy based on the vibe prompt
+- Make it visually stunning and match the product's vibe (e.g., "Luxury" = elegant fonts and gold accents, "Cyberpunk" = neon colors and sharp edges)
+- Use Tailwind CSS classes (the template already includes Tailwind CDN)
+- Ensure the product image, name, description, price, and inventory count are displayed
+- Keep the button functional with onclick="handleBuy()"
+- Return ONLY the complete HTML code, no markdown code blocks or explanations
+- Make sure all text content is creative and matches the vibe
+
+The HTML should be production-ready and visually impressive.
+`;
+
+  const userPrompt = `
+Product Information:
+- Name: ${productInfo.name}
+- Description: ${productInfo.description}
+- Price: $${(productInfo.price / 100).toFixed(2)}
+- Inventory: ${productInfo.inventoryCount} in stock
+- Vibe/Style: ${productInfo.vibePrompt}
+- Image URL: ${productInfo.imageUrl}
+
+Base HTML Template:
+${baseHTML}
+
+Please customize this HTML to match the product's vibe while keeping all the functionality intact.
+`;
+
+  try {
+    const message = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 4096,
+      temperature: 0.8,
+      system: systemPrompt,
+      messages: [
+        { role: 'user', content: userPrompt }
+      ],
+    });
+
+    const content = message.content[0].type === 'text' ? message.content[0].text : '';
+    // Remove any markdown code block syntax if present
+    const htmlString = content
+      .replace(/```html/g, '')
+      .replace(/```/g, '')
+      .trim();
+
+    return htmlString;
+
+  } catch (error) {
+    console.error('Error generating custom HTML:', error);
+    // Return the base template as fallback
+    return baseHTML;
+  }
+}
